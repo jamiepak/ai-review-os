@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>腾讯会议产品&设计评审报名表</title>
+<style>
+:root {
+  --primary: #1677ff;
+  --primary-light: #e6f4ff;
+  --primary-dark: #0958d9;
+  --success: #52c41a;
+  --success-bg: #f6ffed;
+  --warning: #faad14;
+  --warning-bg: #fffbe6;
+  --danger: #ff4d4f;
+  --danger-bg: #fff2f0;
+  --bg: #f5f5f5;
+  --card: #ffffff;
+  --text: #1f1f1f;
+  --text2: #666;
+  --text3: #999;
+  --border: #e8e8e8;
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh; padding-bottom: 100px;
+}
+.header {
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  padding: 16px 20px; color: #fff;
+}
+.header h1 { font-size: 16px; font-weight: 600; }
+.header p { font-size: 11px; opacity: .85; margin-top: 2px; }
+.container { padding: 16px; max-width: 520px; margin: 0 auto; }
+.card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; display:flex; align-items:center; gap:6px; }
+.form-group { margin-bottom: 14px; }
+.form-group:last-child { margin-bottom: 0; }
+.form-label { font-size: 13px; font-weight: 500; color: var(--text2); margin-bottom: 6px; display:block; }
+.form-label .required { color: var(--danger); }
+.form-hint { font-size: 11px; color: var(--text3); margin-top: 4px; }
+textarea, input[type="text"], input[type="url"], input[type="date"], select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 14px; background: #fafafa;
+  transition: border-color .2s; outline: none;
+}
+textarea:focus, input:focus, select:focus { border-color: var(--primary); background: #fff; }
+textarea { resize: vertical; min-height: 80px; }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23999' fill='none' stroke-width='1.5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Mode tabs */
+.mode-tabs { display:flex; gap:0; margin-bottom:16px; border-radius:8px; overflow:hidden; border:1px solid var(--border); }
+.mode-tab {
+  flex:1; padding:10px; text-align:center; cursor:pointer;
+  font-size:14px; font-weight:500; background:#fafafa; color:var(--text2);
+  transition: all .2s; border: none;
+}
+.mode-tab.active { background:var(--primary); color:#fff; }
+.mode-tab:first-child { border-right:1px solid var(--border); }
+
+/* Radio group */
+.radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+.radio-item {
+  flex: 1; min-width: 70px; padding: 10px 6px; border: 1.5px solid var(--border);
+  border-radius: 8px; text-align: center; cursor: pointer; font-size: 13px;
+  transition: all .2s; background: #fafafa;
+}
+.radio-item.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-weight: 500; }
+.radio-item.disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+
+/* Date chips */
+.date-chips { display:flex; gap:10px; flex-wrap:wrap; }
+.date-chip {
+  padding:10px 14px; border:1.5px solid var(--border); border-radius:10px;
+  cursor:pointer; background:#fff; transition:all .2s;
+  min-width:120px; position:relative;
+}
+.date-chip:hover { border-color:#91caff; background:#f0f5ff; }
+.date-chip.active { border-color:var(--primary); background:var(--primary-light); }
+.date-chip .day { font-weight:600; font-size:15px; color:var(--text); }
+.date-chip.active .day { color:var(--primary); }
+.date-chip .time { font-size:11px; color:var(--text3); margin-top:2px; }
+.date-chip.active .time { color:var(--primary); opacity:.8; }
+.date-chip .type-tag {
+  display:inline-block; font-size:10px; padding:1px 6px; border-radius:4px;
+  margin-top:4px; background:#f5f5f5; color:var(--text3);
+}
+.date-chip.active .type-tag { background:rgba(22,119,255,.12); color:var(--primary); }
+
+/* Link parse row */
+.link-parse-row { display:flex; gap:8px; align-items:flex-start; }
+.link-parse-row input { flex:1; }
+.link-parse-row .btn { white-space:nowrap; height:40px; }
+
+/* Parse status */
+.parse-status {
+  margin-top:8px; padding:10px; border-radius:8px;
+  font-size:12px; display:none;
+}
+.parse-status.show { display:block; }
+.parse-status.loading { background:#f0f5ff; color:var(--primary); }
+.parse-status.success { background:var(--success-bg); color:var(--success); }
+.parse-status.error { background:var(--danger-bg); color:var(--danger); }
+
+/* Buttons */
+.btn {
+  padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px;
+  font-weight: 500; cursor: pointer; transition: all .2s; display:inline-flex; align-items:center; gap:6px;
+}
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:disabled { background: #bbb; cursor:not-allowed; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+.btn-lg { width: 100%; justify-content: center; padding: 14px; font-size: 16px; }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* Story items */
+.story-list { display: flex; flex-direction: column; gap: 10px; }
+.story-item {
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px;
+  background: #fafafa; position: relative;
+}
+.story-item.loading { opacity: .7; }
+.story-item.error { border-color: var(--danger); background: var(--danger-bg); }
+.story-item.success { border-color: var(--success); background: var(--success-bg); }
+.story-name { font-size: 14px; font-weight: 500; margin-bottom: 6px; padding-right: 28px; }
+.story-meta { font-size: 12px; color: var(--text3); line-height: 1.8; }
+.story-meta span { margin-right: 12px; }
+.story-content-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-top: 6px; }
+.badge-tapd { background: var(--success-bg); color: var(--success); }
+.badge-doc { background: var(--primary-light); color: var(--primary); }
+.badge-empty { background: var(--warning-bg); color: var(--warning); }
+.story-remove {
+  position: absolute; top: 8px; right: 8px; width: 24px; height: 24px;
+  border: none; background: none; cursor: pointer; font-size: 16px; color: var(--text3);
+  display: flex; align-items: center; justify-content: center; border-radius: 50%;
+}
+.story-remove:hover { background: #f0f0f0; color: var(--danger); }
+.story-content-preview {
+  margin-top: 8px; padding: 8px; background: #fff; border-radius: 6px;
+  font-size: 12px; color: var(--text2); max-height: 80px; overflow: hidden;
+  position: relative; border: 1px solid #f0f0f0;
+}
+.story-content-preview.expanded { max-height: none; }
+.toggle-content { font-size: 12px; color: var(--primary); cursor: pointer; margin-top: 4px; display:block; }
+.ai-summary {
+  margin-top:10px; padding:10px; background:linear-gradient(135deg,#f0f5ff,#e6f4ff);
+  border-radius:8px; border:1px solid #d6e4ff; font-size:12px; color:var(--text);
+}
+.ai-summary .label { font-size:11px; color:var(--primary); font-weight:600; margin-bottom:4px; }
+
+/* Spinner */
+.spinner { width:16px; height:16px; border:2px solid #fff3; border-top-color:#fff; border-radius:50%; animation:spin .6s linear infinite; display:inline-block; }
+.spinner-dark { border-color: #0001; border-top-color: var(--primary); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Submit bar */
+.submit-bar {
+  position: fixed; bottom: 0; left: 0; right: 0; background: #fff;
+  border-top: 1px solid var(--border); padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 200; display: none;
+}
+.submit-bar .info { font-size: 12px; color: var(--text3); margin-bottom: 8px; text-align:center; }
+
+/* Toast */
+.toast {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,.78); color: #fff; padding: 12px 24px;
+  border-radius: 10px; font-size: 14px; z-index: 9999;
+  white-space: pre-line; text-align: center; pointer-events: none;
+  animation: fadeInOut 2.5s ease;
+}
+@keyframes fadeInOut { 0%{opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{opacity:0} }
+
+.result-card { display:none; }
+.result-card.show { display:block; }
+.result-item { padding:10px 0; border-bottom: 1px solid #f5f5f5; }
+.result-item:last-child { border:none; }
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header" style="display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <h1>📋 腾讯会议产品&设计评审</h1>
+    <p>自动解析 · 智能通知 · AI 归档</p>
+  </div>
+  <a href="review-manage.html" style="color:rgba(255,255,255,.9);font-size:12px;text-decoration:none;background:rgba(255,255,255,.18);padding:5px 10px;border-radius:6px;white-space:nowrap;">评审管理</a>
+</div>
+
+<div class="container">
+
+  <!-- 切换到报名管理 -->
+  <div style="margin-bottom:12px;">
+    <a href="review-history.html" style="display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:var(--radius);padding:12px 16px;text-decoration:none;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.06);">
+      <span style="font-size:14px;">📋 查看全部报名记录</span>
+      <span style="color:var(--text3);font-size:18px;">›</span>
+    </a>
+  </div>
+
+  <!-- Mode switch + Input -->
+  <div class="card" id="modeCard">
+    <div class="card-title">① 添加评审需求</div>
+    <div class="mode-tabs">
+      <div class="mode-tab active" onclick="switchMode('tapd')">🔗 TAPD 链接</div>
+      <div class="mode-tab" onclick="switchMode('manual')">✏️ 手动填写</div>
+    </div>
+
+    <!-- TAPD mode: 一步提交 -->
+    <div id="tapdMode">
+      <div class="form-group">
+        <label class="form-label">TAPD 链接 <span class="required">*</span></label>
+        <div class="link-parse-row">
+          <input type="text" id="tapdInput" placeholder="粘贴 TAPD 需求链接或需求 ID">
+          <button class="btn btn-primary btn-sm" id="extractBtn" onclick="extractAndFill()">解析</button>
+        </div>
+        <div class="form-hint">粘贴后点击解析，自动填充下方信息</div>
+        <div class="parse-status" id="tapdParseStatus"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">需求名称</label>
+        <input type="text" id="tapdName" placeholder="解析后自动填入">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">产品</label>
+          <input type="text" id="tapdPM" placeholder="请输入">
+        </div>
+        <div class="form-group">
+          <label class="form-label">设计师</label>
+          <input type="text" id="tapdDesigner" placeholder="请输入">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> 评审日期</label>
+        <div class="date-chips" id="dateChips"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> 评审类型</label>
+        <div class="radio-group" id="reviewTypes">
+          <div class="radio-item" data-type="交互" onclick="selectType(this, '交互')">🔄 交互</div>
+          <div class="radio-item" data-type="视觉" onclick="selectType(this, '视觉')">🎨 视觉</div>
+          <div class="radio-item" data-type="纯产品逻辑" onclick="selectType(this, '纯产品逻辑')">📋 纯产品逻辑</div>
+          <div class="radio-item" data-type="交互+视觉" onclick="selectType(this, '交互+视觉')">🔄🎨 交互+视觉</div>
+        </div>
+        <div class="form-hint" id="typeHint" style="display:none;color:var(--primary);">ℹ️ 本场评审类型已由评审会议确定</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">预计评审时间</label>
+        <div class="radio-group" id="tapdDurationGroup">
+          <div class="radio-item" onclick="selectDuration('tapd', this, '5')">5分钟</div>
+          <div class="radio-item" onclick="selectDuration('tapd', this, '20')">20分钟</div>
+          <div class="radio-item" onclick="selectDuration('tapd', this, '30')">30分钟</div>
+          <div class="radio-item" onclick="selectDuration('tapd', this, '60')">60分钟</div>
+          <div class="radio-item" onclick="selectDuration('tapd', this, 'custom')">自定义</div>
+        </div>
+        <input type="text" id="tapdDurationCustom" class="hidden" placeholder="输入分钟数" style="margin-top:8px;">
+      </div>
+
+      <button class="btn btn-primary btn-lg" id="tapdSubmitBtn" onclick="submitTapdDirect()">📤 提交评审报名</button>
+    </div>
+
+    <!-- Manual mode: 一步提交 -->
+    <div id="manualMode" class="hidden">
+      <div class="form-group">
+        <label class="form-label">需求名称 <span class="required">*</span></label>
+        <input type="text" id="manualName" placeholder="输入需求/项目名称">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">产品</label>
+          <input type="text" id="manualPM" placeholder="请输入">
+        </div>
+        <div class="form-group">
+          <label class="form-label">设计师</label>
+          <input type="text" id="manualDesigner" placeholder="请输入">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> 评审日期</label>
+        <div class="date-chips" id="manualDateChips"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label"><span class="required">*</span> 评审类型</label>
+        <div class="radio-group" id="manualReviewTypes">
+          <div class="radio-item" data-type="交互" onclick="selectManualType(this, '交互')">🔄 交互</div>
+          <div class="radio-item" data-type="视觉" onclick="selectManualType(this, '视觉')">🎨 视觉</div>
+          <div class="radio-item" data-type="纯产品逻辑" onclick="selectManualType(this, '纯产品逻辑')">📋 纯产品逻辑</div>
+          <div class="radio-item" data-type="交互+视觉" onclick="selectManualType(this, '交互+视觉')">🔄🎨 交互+视觉</div>
+        </div>
+        <div class="form-hint" id="manualTypeHint" style="display:none;color:var(--primary);">ℹ️ 本场评审类型已由评审会议确定</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">TAPD 链接 / 企微文档链接</label>
+        <input type="text" id="manualLinkInput" placeholder="粘贴 TAPD 或 doc.weixin.qq.com 链接">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">预计评审时间</label>
+        <div class="radio-group" id="manualDurationGroup">
+          <div class="radio-item" onclick="selectDuration('manual', this, '5')">5分钟</div>
+          <div class="radio-item" onclick="selectDuration('manual', this, '20')">20分钟</div>
+          <div class="radio-item" onclick="selectDuration('manual', this, '30')">30分钟</div>
+          <div class="radio-item" onclick="selectDuration('manual', this, '60')">60分钟</div>
+          <div class="radio-item" onclick="selectDuration('manual', this, 'custom')">自定义</div>
+        </div>
+        <input type="text" id="manualDurationCustom" class="hidden" placeholder="输入分钟数" style="margin-top:8px;">
+      </div>
+
+      <button class="btn btn-primary btn-lg" id="manualSubmitBtn" onclick="submitManualDirect()" style="margin-top:8px;">📤 提交评审报名</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="card result-card" id="resultCard">
+    <div class="card-title">✅ 报名成功</div>
+    <div id="resultContent"></div>
+    <button class="btn btn-outline" style="width:100%; margin-top:12px;" onclick="resetAll()">继续报名</button>
+  </div>
+</div>
+
+
+<script>
+// === Config ===
+// 后端地址：本地开发用 ''（同源），线上部署后修改为实际后端地址
+const API_BASE = location.hostname === 'localhost' ? '' : '';
+const DEMO_MODE = !API_BASE && location.hostname !== 'localhost';
+const DEFAULT_WORKSPACE = '20375092';
+const REVIEW_TIME = '15:00-16:00';
+const BOT_WEBHOOK_URL = 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=c83d814f-a7d5-40bd-b0ec-e58ca3bedcb8';
+
+// 评审类型定义
+const ALL_REVIEW_TYPES = ['交互', '视觉', '纯产品逻辑', '交互+视觉'];
+
+// === State ===
+let stories = [];
+let nextId = 1;
+let currentMode = 'tapd';
+let selectedDate = '';
+let selectedDateWeekday = -1;
+let selectedType = '';
+// Manual mode separate state
+let manualSelectedDate = '';
+let manualSelectedDateWeekday = -1;
+let manualSelectedType = '';
+let tapdSelectedDuration = '';
+let manualSelectedDuration = '';
+
+function selectDuration(mode, el, value) {
+  const groupId = mode === 'tapd' ? 'tapdDurationGroup' : 'manualDurationGroup';
+  const customId = mode === 'tapd' ? 'tapdDurationCustom' : 'manualDurationCustom';
+  document.querySelectorAll('#' + groupId + ' .radio-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  const customInput = document.getElementById(customId);
+  if (value === 'custom') {
+    customInput.classList.remove('hidden');
+    customInput.focus();
+    if (mode === 'tapd') tapdSelectedDuration = 'custom';
+    else manualSelectedDuration = 'custom';
+  } else {
+    customInput.classList.add('hidden');
+    customInput.value = '';
+    if (mode === 'tapd') tapdSelectedDuration = value;
+    else manualSelectedDuration = value;
+  }
+}
+
+function getDuration(mode) {
+  const val = mode === 'tapd' ? tapdSelectedDuration : manualSelectedDuration;
+  if (val === 'custom') {
+    const customId = mode === 'tapd' ? 'tapdDurationCustom' : 'manualDurationCustom';
+    return document.getElementById(customId).value.trim();
+  }
+  return val;
+}
+
+// === Init ===
+document.addEventListener('DOMContentLoaded', async () => {
+  // Demo 模式提示
+  if (DEMO_MODE) {
+    const tip = document.createElement('div');
+    tip.style.cssText = 'background:linear-gradient(135deg,#fffbe6,#fff7cc);border:1px solid #ffe58f;border-radius:8px;padding:12px 16px;margin:16px;font-size:13px;color:#ad6800;max-width:520px;margin:16px auto;';
+    tip.innerHTML = '🎨 <b>演示模式</b> — 当前为纯前端预览，报名提交等功能需连接后端服务后使用。<br><span style="font-size:11px;color:#ad8b00;">如需完整体验请在本地启动 server-v2.py</span>';
+    document.querySelector('.container')?.prepend(tip);
+  }
+
+  // 先从 API 加载待评审会议列表
+  if (!DEMO_MODE) {
+    await loadUpcomingMeetings();
+  }
+  generateDateChips();
+  generateManualDateChips();
+
+  // 如果从评审管理点"报名本场"跳过来，显示提示
+  const params = new URLSearchParams(window.location.search);
+  const meetingKey = params.get('meeting');
+  if (meetingKey) {
+    const m = upcomingMeetings.find(x => x.key === meetingKey);
+    if (m) {
+      const d = new Date(m.start_time);
+      const banner = document.createElement('div');
+      banner.style.cssText = 'background:#e6f4ff;border:1px solid #91caff;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#1677ff;';
+      banner.innerHTML = `📅 正在为 <b>${m.subject || '评审会议'}</b> 报名（${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}）`;
+      const container = document.querySelector('.container');
+      const firstCard = container?.querySelector('.card');
+      if (firstCard) container.insertBefore(banner, firstCard);
+    }
+  }
+
+  fetch(`${API_BASE}/api/health`, {signal: AbortSignal.timeout(5000)}).then(r => {
+    if (r.ok) console.log('[OK] Server connected');
+  }).catch(() => {
+    const tip = document.createElement('div');
+    tip.style.cssText = 'position:fixed;top:0;left:0;right:0;padding:12px 16px;background:#ff4d4f;color:#fff;font-size:13px;text-align:center;z-index:9999;';
+    tip.innerHTML = '⚠️ 无法连接服务';
+    document.body.prepend(tip);
+  });
+});
+
+// === Date chips (from meetings API) ===
+let upcomingMeetings = []; // 缓存 API 返回的会议列表
+let selectedMeetingKey = ''; // 当前选中的会议 key（TAPD 模式）
+let manualSelectedMeetingKey = ''; // 当前选中的会议 key（手动模式）
+
+async function loadUpcomingMeetings() {
+  try {
+    const resp = await fetch(`${API_BASE}/api/meetings`);
+    const data = await resp.json();
+    if (data.success) {
+      upcomingMeetings = (data.upcoming || [])
+        .filter(m => m.status === 'scheduled')
+        .sort((a, b) => a.start_time.localeCompare(b.start_time))
+        .slice(0, 6);
+    }
+  } catch(e) { console.warn('加载会议列表失败', e); }
+  return upcomingMeetings;
+}
+
+function generateDateChips() {
+  const chips = document.getElementById('dateChips');
+  const weekdays = ['日','一','二','三','四','五','六'];
+  if (upcomingMeetings.length === 0) {
+    chips.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">暂无待评审会议，请先在<a href="review-manage.html" style="color:var(--primary);">评审管理</a>中预约</div>';
+    return;
+  }
+  chips.innerHTML = upcomingMeetings.map(m => {
+    const d = new Date(m.start_time);
+    const wd = weekdays[d.getDay()];
+    const iso = d.toISOString().split('T')[0];
+    const today = new Date();
+    const isToday = d.toDateString() === today.toDateString();
+    const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const ed = new Date(m.end_time);
+    const endStr = `${String(ed.getHours()).padStart(2,'0')}:${String(ed.getMinutes()).padStart(2,'0')}`;
+    const typeLabel = m.review_type === '纯产品评审' ? '纯产品' : '产品设计';
+    return `<div class="date-chip" data-key="${m.key}" data-weekday="${d.getDay()}" data-type="${m.review_type}" onclick="selectMeeting(this, '${m.key}', '${iso}', ${d.getDay()}, '${m.review_type}')">
+      <div class="day">${d.getMonth()+1}/${d.getDate()} 周${wd}</div>
+      <div class="time">${timeStr}-${endStr}</div>
+      <span class="type-tag">${typeLabel}</span>
+    </div>`;
+  }).join('');
+
+  // 自动选中第一个或 URL 指定的
+  const params = new URLSearchParams(window.location.search);
+  const targetKey = params.get('meeting');
+  const target = targetKey ? chips.querySelector(`[data-key="${targetKey}"]`) : chips.querySelector('.date-chip');
+  if (target) target.click();
+}
+
+function selectMeeting(el, key, date, weekday, reviewType) {
+  document.querySelectorAll('#dateChips .date-chip').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  selectedDate = date;
+  selectedDateWeekday = weekday;
+  selectedMeetingKey = key;
+  // 纯产品评审自动锁定，产品设计评审让用户自选
+  if (reviewType === '纯产品评审') {
+    selectedType = '纯产品逻辑';
+  } else {
+    selectedType = '';
+  }
+  document.querySelectorAll('#reviewTypes .radio-item').forEach(e => {
+    e.classList.toggle('active', e.dataset.type === selectedType);
+  });
+  updateTypeConstraints();
+}
+
+function generateManualDateChips() {
+  const chips = document.getElementById('manualDateChips');
+  const weekdays = ['日','一','二','三','四','五','六'];
+  if (upcomingMeetings.length === 0) {
+    chips.innerHTML = '<div style="font-size:12px;color:var(--text3);padding:8px 0;">暂无待评审会议，请先在<a href="review-manage.html" style="color:var(--primary);">评审管理</a>中预约</div>';
+    return;
+  }
+  chips.innerHTML = upcomingMeetings.map(m => {
+    const d = new Date(m.start_time);
+    const wd = weekdays[d.getDay()];
+    const iso = d.toISOString().split('T')[0];
+    const today = new Date();
+    const isToday = d.toDateString() === today.toDateString();
+    const timeStr = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const ed = new Date(m.end_time);
+    const endStr = `${String(ed.getHours()).padStart(2,'0')}:${String(ed.getMinutes()).padStart(2,'0')}`;
+    const typeLabel = m.review_type === '纯产品评审' ? '纯产品' : '产品设计';
+    return `<div class="date-chip" data-key="${m.key}" data-weekday="${d.getDay()}" data-type="${m.review_type}" onclick="selectManualMeeting(this, '${m.key}', '${iso}', ${d.getDay()}, '${m.review_type}')">
+      <div class="day">${d.getMonth()+1}/${d.getDate()} 周${wd}</div>
+      <div class="time">${timeStr}-${endStr}</div>
+      <span class="type-tag">${typeLabel}</span>
+    </div>`;
+  }).join('');
+
+  const first = chips.querySelector('.date-chip');
+  if (first) first.click();
+}
+
+function selectManualMeeting(el, key, date, weekday, reviewType) {
+  document.querySelectorAll('#manualDateChips .date-chip').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  manualSelectedDate = date;
+  manualSelectedDateWeekday = weekday;
+  manualSelectedMeetingKey = key;
+  if (reviewType === '纯产品评审') {
+    manualSelectedType = '纯产品逻辑';
+  } else {
+    manualSelectedType = '';
+  }
+  document.querySelectorAll('#manualReviewTypes .radio-item').forEach(e => {
+    e.classList.toggle('active', e.dataset.type === manualSelectedType);
+  });
+  updateManualTypeConstraints();
+}
+
+function updateTypeConstraints() {
+  const meetingType = selectedType;
+  const hint = document.getElementById('typeHint');
+  const curMeeting = upcomingMeetings.find(m => m.key === selectedMeetingKey);
+  const meetingReviewType = curMeeting?.review_type || '';
+  const isPureProduct = meetingReviewType === '纯产品评审';
+
+  if (hint) {
+    if (isPureProduct) {
+      hint.style.display = 'block';
+      hint.textContent = 'ℹ️ 本场为纯产品评审，仅可选择「纯产品逻辑」';
+    } else {
+      hint.style.display = 'none';
+    }
+  }
+
+  document.querySelectorAll('#reviewTypes .radio-item').forEach(el => {
+    const type = el.dataset.type;
+    if (isPureProduct && type !== '纯产品逻辑') {
+      el.classList.add('disabled');
+      el.classList.remove('active');
+    } else {
+      el.classList.remove('disabled');
+    }
+  });
+
+  // 纯产品评审自动选中纯产品逻辑
+  if (isPureProduct) {
+    const el = document.querySelector('#reviewTypes .radio-item[data-type="纯产品逻辑"]');
+    if (el) { el.classList.add('active'); selectedType = '纯产品逻辑'; }
+  }
+}
+
+function updateManualTypeConstraints() {
+  const hint = document.getElementById('manualTypeHint');
+  const curMeeting = upcomingMeetings.find(m => m.key === manualSelectedMeetingKey);
+  const meetingReviewType = curMeeting?.review_type || '';
+  const isPureProduct = meetingReviewType === '纯产品评审';
+
+  if (hint) {
+    if (isPureProduct) {
+      hint.style.display = 'block';
+      hint.textContent = 'ℹ️ 本场为纯产品评审，仅可选择「纯产品逻辑」';
+    } else {
+      hint.style.display = 'none';
+    }
+  }
+
+  document.querySelectorAll('#manualReviewTypes .radio-item').forEach(el => {
+    const type = el.dataset.type;
+    if (isPureProduct && type !== '纯产品逻辑') {
+      el.classList.add('disabled');
+      el.classList.remove('active');
+    } else {
+      el.classList.remove('disabled');
+    }
+  });
+
+  if (isPureProduct) {
+    const el = document.querySelector('#manualReviewTypes .radio-item[data-type="纯产品逻辑"]');
+    if (el) { el.classList.add('active'); manualSelectedType = '纯产品逻辑'; }
+  }
+}
+
+function selectManualType(el, value) {
+  if (el.classList.contains('disabled')) return;
+  document.querySelectorAll('#manualReviewTypes .radio-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  manualSelectedType = value;
+}
+
+// === Manual one-step submit ===
+async function submitManualDirect() {
+  const name = document.getElementById('manualName').value.trim();
+  if (!name) { showToast('请输入需求名称'); return; }
+  if (!manualSelectedDate) { showToast('请选择评审日期'); return; }
+  if (!manualSelectedType) { showToast('请选择评审类型'); return; }
+
+  const pm = document.getElementById('manualPM').value.trim();
+  const designer = document.getElementById('manualDesigner').value.trim();
+  const linkInput = document.getElementById('manualLinkInput').value.trim();
+  const duration = getDuration('manual');
+  const ft = '';
+  const webhookUrl = '';
+  const botWebhookUrl = BOT_WEBHOOK_URL;
+
+  let tapdUrl = '';
+  let docUrl = '';
+  if (linkInput) {
+    if (linkInput.includes('tapd.woa.com')) tapdUrl = linkInput;
+    else if (linkInput.includes('doc.weixin.qq.com') || linkInput.includes('docs.qq.com')) docUrl = linkInput;
+  }
+
+  const btn = document.getElementById('manualSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 提交中...';
+
+  try {
+    const payload = {
+      stories: [{
+        mode: 'manual',
+        name, description: '', creator: pm, designer,
+        doc_url: docUrl, tapd_url: tapdUrl, duration
+      }],
+      review_date: manualSelectedDate,
+      review_time: (() => { const m = upcomingMeetings.find(x => x.key === manualSelectedMeetingKey); return m ? m.start_time.split('T')[1]?.substring(0,5)+'-'+m.end_time.split('T')[1]?.substring(0,5) : REVIEW_TIME; })(),
+      review_type: manualSelectedType,
+      ft, note: '',
+      meeting_key: manualSelectedMeetingKey,
+      webhook_url: webhookUrl, bot_webhook_url: botWebhookUrl
+    };
+
+    const result = await apiCall('/api/submit', payload);
+    if (result.success) {
+      showResult(result, manualSelectedDate, manualSelectedType, ft);
+      showToast(`✅ 报名成功`);
+    } else {
+      showToast('❌ 提交失败: ' + (result.error || '未知错误'));
+    }
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📤 提交评审报名';
+  }
+}
+
+// === Mode switch ===
+function switchMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.mode-tab').forEach(e => e.classList.remove('active'));
+  document.querySelector(`.mode-tab:nth-child(${mode === 'tapd' ? 1 : 2})`).classList.add('active');
+  document.getElementById('tapdMode').classList.toggle('hidden', mode !== 'tapd');
+  document.getElementById('manualMode').classList.toggle('hidden', mode !== 'manual');
+}
+
+// === API call ===
+async function apiCall(path, body, retries = 1) {
+  const url = `${API_BASE}${path}`;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      const resp = await fetch(url, {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body), signal: controller.signal
+      });
+      clearTimeout(timeout);
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      return await resp.json();
+    } catch (e) {
+      if (attempt < retries) continue;
+      if (e.name === 'AbortError') throw new Error('请求超时');
+      if (e.message === 'Failed to fetch') throw new Error('无法连接服务器');
+      throw e;
+    }
+  }
+}
+
+// === Parse TAPD input ===
+function parseTapdInput(text) {
+  const results = [];
+  const lines = text.split(/\n/);
+  const seen = new Set();
+  for (const line of lines) {
+    const urlMatch = line.match(/tapd\.woa\.com\/(?:tapd_fe\/)?(\d+)\/(?:story|stories)\/(?:detail|view)\/(\d+)/);
+    if (urlMatch) {
+      if (!seen.has(urlMatch[2])) { seen.add(urlMatch[2]); results.push({ workspace_id: urlMatch[1], story_id: urlMatch[2], raw: line.trim() }); }
+      continue;
+    }
+    const idMatch = line.match(/\b(10\d{17,18})\b/);
+    if (idMatch) {
+      if (!seen.has(idMatch[1])) { seen.add(idMatch[1]); results.push({ workspace_id: DEFAULT_WORKSPACE, story_id: idMatch[1], raw: line.trim() }); }
+      continue;
+    }
+    const numMatch = line.match(/\b(\d{19,20})\b/);
+    if (numMatch && !seen.has(numMatch[1])) {
+      seen.add(numMatch[1]); results.push({ workspace_id: DEFAULT_WORKSPACE, story_id: numMatch[1], raw: line.trim() });
+    }
+  }
+  return results;
+}
+
+// === Fetch TAPD story ===
+async function fetchTapdStory(workspaceId, storyId) {
+  const result = await apiCall('/api/tapd', {
+    jsonrpc: '2.0', id: 1, method: 'tools/call',
+    params: { name: 'stories_get', arguments: {
+      workspace_id: workspaceId, id: storyId,
+      fields: 'id,name,description,creator,owner,status,priority,custom_field_86,custom_field_87,custom_field_91,iteration_id'
+    }}
+  });
+  const inner = JSON.parse(result?.result?.content?.[0]?.text || '{}');
+  if (inner.data && inner.data.length > 0) return inner.data[0];
+  return null;
+}
+
+// === Extract and fill TAPD fields ===
+let tapdParsedData = null;
+
+async function extractAndFill() {
+  const input = document.getElementById('tapdInput').value.trim();
+  const status = document.getElementById('tapdParseStatus');
+  if (!input) { showToast('请先粘贴 TAPD 链接'); return; }
+
+  const parsed = parseTapdInput(input);
+  if (parsed.length === 0) { showToast('未识别到有效的需求 ID'); return; }
+
+  const p = parsed[0];
+  status.className = 'parse-status show loading';
+  status.innerHTML = '<span class="spinner spinner-dark"></span> 解析中...';
+
+  try {
+    const d = await fetchTapdStory(p.workspace_id, p.story_id);
+    if (d) {
+      tapdParsedData = { ...d, workspace_id: p.workspace_id, story_id: p.story_id };
+      document.getElementById('tapdName').value = d.name || '';
+      document.getElementById('tapdPM').value = d.custom_field_91 || d.creator || '';
+      document.getElementById('tapdDesigner').value = d.custom_field_87 || d.custom_field_86 || '';
+
+      status.className = 'parse-status show success';
+      status.textContent = '✅ 已解析：' + d.name;
+    } else {
+      tapdParsedData = null;
+      status.className = 'parse-status show error';
+      status.textContent = '❌ TAPD 需求未找到';
+    }
+  } catch (e) {
+    tapdParsedData = null;
+    status.className = 'parse-status show error';
+    status.textContent = '❌ ' + e.message;
+  }
+}
+
+// === TAPD mode one-step submit ===
+async function submitTapdDirect() {
+  const name = document.getElementById('tapdName').value.trim();
+  if (!name) { showToast('请先解析 TAPD 链接或填入需求名称'); return; }
+  if (!selectedDate) { showToast('请选择评审日期'); return; }
+  if (!selectedType) { showToast('请选择评审类型'); return; }
+
+  const pm = document.getElementById('tapdPM').value.trim();
+  const designer = document.getElementById('tapdDesigner').value.trim();
+  const tapdUrl = document.getElementById('tapdInput').value.trim();
+  const duration = getDuration('tapd');
+  const webhookUrl = '';
+  const botWebhookUrl = BOT_WEBHOOK_URL;
+
+  const btn = document.getElementById('tapdSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> 提交中...';
+
+  try {
+    const tapd_url = tapdParsedData
+      ? 'https://tapd.woa.com/tapd_fe/' + tapdParsedData.workspace_id + '/story/detail/' + tapdParsedData.story_id
+      : (tapdUrl.includes('tapd') ? tapdUrl : '');
+
+    const storyPayload = {
+      mode: 'manual',
+      name, description: '', creator: pm, designer,
+      tapd_url, doc_url: '', duration
+    };
+
+    const curMeeting = upcomingMeetings.find(m => m.key === selectedMeetingKey);
+    const reviewTime = curMeeting ? curMeeting.start_time.split('T')[1]?.substring(0,5) + '-' + curMeeting.end_time.split('T')[1]?.substring(0,5) : REVIEW_TIME;
+
+    const result = await apiCall('/api/submit', {
+      stories: [storyPayload],
+      review_date: selectedDate, review_time: reviewTime,
+      review_type: selectedType, ft: '', note: '',
+      meeting_key: selectedMeetingKey,
+      webhook_url: webhookUrl, bot_webhook_url: botWebhookUrl
+    });
+    if (result.success) {
+      showResult(result, selectedDate, selectedType, '');
+      showToast('✅ 报名成功');
+    } else {
+      showToast('❌ ' + (result.error || '未知错误'));
+    }
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '📤 提交评审报名';
+  }
+}
+
+function escHtml(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// === Settings ===
+function selectType(el, value) {
+  if (el.classList.contains('disabled')) return;
+  document.querySelectorAll('#reviewTypes .radio-item').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  selectedType = value;
+}
+
+function showResult(result, date, type, ft) {
+  const hide = id => { const el = document.getElementById(id); if (el) el.classList.add('hidden'); };
+  const hideStyle = id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
+
+  hideStyle('submitBar');
+  hide('modeCard');
+
+  const card = document.getElementById('resultCard');
+  card.classList.add('show');
+  const records = result.records || [];
+  const tableOk = result.table_result?.errcode === 0;
+  const notifyOk = result.notification?.sent;
+
+  const curMtg = upcomingMeetings.find(m => m.key === selectedMeetingKey);
+  const displayTime = curMtg ? curMtg.start_time.split('T')[1]?.substring(0,5)+'-'+curMtg.end_time.split('T')[1]?.substring(0,5) : REVIEW_TIME;
+  let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:12px;">
+    📅 ${date} ${displayTime}<br>🏷️ ${type} · ${ft || '未指定项目组'}
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <span class="story-content-badge ${tableOk ? 'badge-tapd' : 'badge-empty'}">${tableOk ? '✅ 已写入表格' : '⚠️ 表格异常'}</span>
+    <span class="story-content-badge ${notifyOk ? 'badge-tapd' : 'badge-empty'}">${notifyOk ? '✅ 已通知群聊' : '⚠️ 群通知异常'}</span>
+  </div>`;
+
+  for (const r of records) {
+    html += `<div class="result-item">
+      <div style="font-weight:500;font-size:14px;">${r.status === 'ok' ? '✅' : '❌'} ${escHtml(r.name || r.story_id)}</div>
+      ${(r.creator || r.designer) ? `<div style="font-size:12px;color:var(--text3);margin-top:4px;">
+        ${r.creator ? '产品: ' + escHtml(r.creator) : ''}${r.creator && r.designer ? ' | ' : ''}${r.designer ? '设计: ' + escHtml(r.designer) : ''}
+      </div>` : ''}
+    </div>`;
+  }
+  document.getElementById('resultContent').innerHTML = html;
+}
+
+function resetAll() {
+  stories = []; nextId = 1; selectedType = ''; manualSelectedType = '';
+  tapdSelectedDuration = ''; manualSelectedDuration = '';
+  selectedMeetingKey = ''; manualSelectedMeetingKey = '';
+  tapdParsedData = null;
+  document.getElementById('tapdInput').value = '';
+  document.getElementById('tapdName').value = '';
+  document.getElementById('tapdPM').value = '';
+  document.getElementById('tapdDesigner').value = '';
+  document.getElementById('tapdParseStatus').className = 'parse-status';
+  document.getElementById('tapdDurationCustom').value = '';
+  document.getElementById('tapdDurationCustom').classList.add('hidden');
+  document.getElementById('manualName').value = '';
+  document.getElementById('manualPM').value = '';
+  document.getElementById('manualDesigner').value = '';
+  document.getElementById('manualLinkInput').value = '';
+  document.getElementById('manualDurationCustom').value = '';
+  document.getElementById('manualDurationCustom').classList.add('hidden');
+  document.getElementById('resultCard').classList.remove('show');
+  document.getElementById('modeCard').classList.remove('hidden');
+  document.querySelectorAll('.radio-item').forEach(e => e.classList.remove('active'));
+  generateDateChips();
+  generateManualDateChips();
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+document.getElementById('tapdInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); extractAndFill(); }
+});
+</script>
+</body>
+</html>

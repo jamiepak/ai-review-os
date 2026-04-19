@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>历史评审记录</title>
+<style>
+:root {
+  --primary: #1677ff;
+  --primary-light: #e6f4ff;
+  --primary-dark: #0958d9;
+  --success: #52c41a;
+  --success-bg: #f6ffed;
+  --warning: #faad14;
+  --warning-bg: #fffbe6;
+  --danger: #ff4d4f;
+  --danger-bg: #fff2f0;
+  --bg: #f5f5f5;
+  --card: #ffffff;
+  --text: #1f1f1f;
+  --text2: #666;
+  --text3: #999;
+  --border: #e8e8e8;
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", sans-serif;
+  background: var(--bg); color: var(--text);
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  padding: 16px 20px; color: #fff;
+  display: flex; align-items: center; gap: 12px;
+}
+.header .back-btn, .detail-header .back-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,.2); color: #fff; font-size: 18px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.header h1 { font-size: 16px; font-weight: 600; }
+.header p { font-size: 11px; opacity: .85; margin-top: 2px; }
+
+.container { padding: 16px; max-width: 520px; margin: 0 auto; }
+
+/* Tabs */
+.tab-bar {
+  display: flex; gap: 0; margin-bottom: 16px; border-radius: 8px;
+  overflow: hidden; border: 1px solid var(--border); background: #fff;
+}
+.tab-item {
+  flex: 1; padding: 10px; text-align: center; cursor: pointer;
+  font-size: 13px; font-weight: 500; background: #fafafa; color: var(--text2);
+  transition: all .2s; border: none; position: relative;
+}
+.tab-item.active { background: var(--primary); color: #fff; }
+.tab-item .badge {
+  display: inline-block; font-size: 11px; background: rgba(255,255,255,.3);
+  padding: 1px 6px; border-radius: 10px; margin-left: 4px;
+}
+.tab-item.active .badge { background: rgba(255,255,255,.3); }
+.tab-item:not(.active) .badge { background: var(--primary-light); color: var(--primary); }
+
+/* Record card */
+.record-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  cursor: pointer; transition: all .15s;
+  border-left: 3px solid transparent;
+}
+.record-card:active { transform: scale(.98); }
+.record-card.upcoming { border-left-color: var(--primary); }
+.record-card.past { border-left-color: var(--border); }
+
+.record-card .title {
+  font-size: 14px; font-weight: 600; line-height: 1.4;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.record-card .meta {
+  display: flex; flex-wrap: wrap; gap: 6px 12px;
+  font-size: 12px; color: var(--text3); margin-top: 8px;
+}
+.record-card .meta-item { display: flex; align-items: center; gap: 3px; }
+.record-card .actions {
+  display: flex; gap: 8px; margin-top: 10px; justify-content: flex-end;
+}
+.record-card .tag {
+  display: inline-block; font-size: 11px; padding: 2px 8px;
+  border-radius: 4px; margin-top: 8px;
+}
+.tag-upcoming { background: var(--primary-light); color: var(--primary); }
+.tag-past { background: #f5f5f5; color: var(--text3); }
+
+/* Buttons */
+.btn {
+  padding: 6px 14px; border: none; border-radius: 6px; font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all .2s;
+}
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+.btn-danger-outline { background: transparent; border: 1px solid var(--danger); color: var(--danger); }
+.btn-danger-outline:hover { background: var(--danger-bg); }
+
+/* Detail page */
+.detail-page {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg); z-index: 300;
+  transform: translateX(100%); transition: transform .25s ease;
+  overflow-y: auto;
+}
+.detail-page.show { transform: translateX(0); }
+
+.detail-header {
+  background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%);
+  padding: 16px 20px; color: #fff;
+  display: flex; align-items: center; gap: 12px;
+}
+.detail-content { padding: 16px; max-width: 520px; margin: 0 auto; }
+
+.detail-card {
+  background: var(--card); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+}
+.detail-card .label {
+  font-size: 12px; color: var(--text3); margin-bottom: 4px;
+}
+.detail-card .value {
+  font-size: 14px; color: var(--text); word-break: break-all;
+}
+.detail-card .field-row {
+  padding: 12px 0; border-bottom: 1px solid #f5f5f5;
+}
+.detail-card .field-row:last-child { border: none; }
+.detail-card a { color: var(--primary); text-decoration: none; }
+
+/* Edit mode */
+.edit-input {
+  width: 100%; padding: 8px 10px; border: 1px solid var(--border);
+  border-radius: 6px; font-size: 14px; background: #fafafa;
+  outline: none; transition: border-color .2s;
+}
+.edit-input:focus { border-color: var(--primary); background: #fff; }
+
+.detail-actions {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: #fff; border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 310; display: flex; gap: 10px;
+}
+.detail-actions .btn { flex: 1; padding: 12px; font-size: 14px; text-align: center; }
+
+/* Empty state */
+.empty-state {
+  text-align: center; padding: 48px 20px; color: var(--text3);
+}
+.empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+.empty-state .text { font-size: 14px; }
+
+/* Loading */
+.loading-state {
+  text-align: center; padding: 32px; color: var(--text3); font-size: 14px;
+}
+
+/* Footer prompt */
+.footer-prompt {
+  text-align: center; padding: 20px; font-size: 12px; color: var(--text3);
+}
+.footer-prompt a { color: var(--primary); text-decoration: none; }
+
+/* Toast */
+.toast {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  background: rgba(0,0,0,.78); color: #fff; padding: 12px 24px;
+  border-radius: 10px; font-size: 14px; z-index: 9999;
+  pointer-events: none; animation: fadeInOut 2.5s ease;
+}
+@keyframes fadeInOut { 0%{opacity:0} 15%{opacity:1} 85%{opacity:1} 100%{opacity:0} }
+
+/* Confirm dialog */
+.confirm-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,.5); z-index: 400;
+  display: flex; align-items: center; justify-content: center;
+}
+.confirm-box {
+  background: #fff; border-radius: 14px; padding: 24px 20px;
+  width: 280px; text-align: center;
+}
+.confirm-box .title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+.confirm-box .msg { font-size: 14px; color: var(--text2); margin-bottom: 20px; }
+.confirm-box .btns { display: flex; gap: 10px; }
+.confirm-box .btns .btn { flex: 1; padding: 10px; font-size: 14px; }
+
+/* Undo toast */
+.undo-toast {
+  position: fixed; bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  left: 16px; right: 16px; max-width: 488px; margin: 0 auto;
+  background: #333; color: #fff; padding: 14px 16px;
+  border-radius: 10px; font-size: 14px; z-index: 9999;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0,0,0,.25);
+  animation: slideUp .25s ease;
+}
+.undo-btn {
+  background: none; border: 1px solid rgba(255,255,255,.5);
+  color: #fff; padding: 6px 14px; border-radius: 6px;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  white-space: nowrap; transition: all .15s;
+}
+.undo-btn:hover { background: rgba(255,255,255,.15); }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeOut { to { opacity: 0; transform: translateY(10px); } }
+</style>
+</head>
+<body>
+
+<!-- ===== 一级页面：列表 ===== -->
+<div id="listPage">
+  <div class="header" style="display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <h1>📋 报名管理</h1>
+      <p>查看、编辑、取消评审报名</p>
+    </div>
+    <a href="review-manage.html" style="color:rgba(255,255,255,.9);font-size:12px;text-decoration:none;background:rgba(255,255,255,.18);padding:5px 10px;border-radius:6px;white-space:nowrap;">评审管理</a>
+  </div>
+
+  <div class="container">
+    <!-- 切换到提报评审 -->
+    <div style="margin-bottom:12px;">
+      <a href="review-app-v2.html" style="display:flex;align-items:center;justify-content:space-between;background:var(--card);border-radius:var(--radius);padding:12px 16px;text-decoration:none;color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.06);">
+        <span style="font-size:14px;">📤 去提报需求评审</span>
+        <span style="color:var(--text3);font-size:18px;">›</span>
+      </a>
+    </div>
+
+    <div class="tab-bar" id="tabBar">
+      <div class="tab-item active" onclick="switchTab('all')">全部 <span class="badge" id="badgeAll">0</span></div>
+      <div class="tab-item" onclick="switchTab('upcoming')">待评审 <span class="badge" id="badgeUpcoming">0</span></div>
+      <div class="tab-item" onclick="switchTab('past')">已完成 <span class="badge" id="badgePast">0</span></div>
+    </div>
+
+    <div id="recordsList"></div>
+
+    <div class="footer-prompt" id="footerPrompt" style="display:none;">
+      查看全部记录请前往
+      <a href="https://doc.weixin.qq.com/smartsheet/s3_AIsALXh3ADUCNq9nOwx3ISwWItMkt_a?scode=AJEAIQdfAAoe1PnE2AAIsALXh3ADU" target="_blank">📊 数据表格</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 二级页面：详情 ===== -->
+<div class="detail-page" id="detailPage">
+  <div class="detail-header">
+    <button class="back-btn" onclick="closeDetail()">←</button>
+    <div>
+      <h1 id="detailTitle">需求详情</h1>
+    </div>
+  </div>
+
+  <div class="detail-content" id="detailContent" style="padding-bottom:80px;"></div>
+
+  <div class="detail-actions" id="detailActions"></div>
+</div>
+
+<script>
+const API_BASE = '';
+const DEMO_MODE = location.hostname !== 'localhost';
+const SMARTSHEET_URL = 'https://doc.weixin.qq.com/smartsheet/s3_AIsALXh3ADUCNq9nOwx3ISwWItMkt_a?scode=AJEAIQdfAAoe1PnE2AAIsALXh3ADU';
+
+let allRecords = [];
+let currentTab = 'all';
+let currentDetail = null;
+let isEditMode = false;
+
+// === Init ===
+document.addEventListener('DOMContentLoaded', loadRecords);
+
+async function loadRecords() {
+  const list = document.getElementById('recordsList');
+  if (DEMO_MODE) {
+    allRecords = [
+      {record_id:'demo1',name:'【示例】产品设计评审需求',creator:'Jamie',designer:'设计师A',review_date:'2026-04-21',review_time:'15:00-16:00',review_type:'交互',duration:'20',tapd_url:'',submitted_at:'2026-04-20T10:00:00',status:'upcoming',summary:'',ft:''},
+      {record_id:'demo2',name:'【示例】转写水印二期',creator:'产品B',designer:'设计师C',review_date:'2026-04-17',review_time:'15:00-16:00',review_type:'视觉',duration:'30',tapd_url:'',submitted_at:'2026-04-16T14:00:00',status:'past',summary:'',ft:''},
+    ];
+    renderList();
+    return;
+  }
+  list.innerHTML = '<div class="loading-state">加载中...</div>';
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/records`);
+    const data = await resp.json();
+    if (data.success) {
+      allRecords = data.records;
+      renderList();
+    } else {
+      list.innerHTML = '<div class="empty-state"><div class="icon">😵</div><div class="text">加载失败</div></div>';
+    }
+  } catch (e) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📡</div><div class="text">无法连接服务</div></div>';
+  }
+}
+
+function renderList() {
+  const list = document.getElementById('recordsList');
+  let filtered = allRecords;
+  if (currentTab === 'upcoming') filtered = allRecords.filter(r => r.status === 'upcoming');
+  if (currentTab === 'past') filtered = allRecords.filter(r => r.status === 'past');
+
+  // Update badges
+  document.getElementById('badgeAll').textContent = allRecords.length;
+  document.getElementById('badgeUpcoming').textContent = allRecords.filter(r => r.status === 'upcoming').length;
+  document.getElementById('badgePast').textContent = allRecords.filter(r => r.status === 'past').length;
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div class="text">暂无评审记录</div></div>';
+    document.getElementById('footerPrompt').style.display = 'none';
+    return;
+  }
+
+  // Group by date
+  const groups = {};
+  for (const r of filtered) {
+    if (!groups[r.review_date]) groups[r.review_date] = [];
+    groups[r.review_date].push(r);
+  }
+
+  let html = '';
+  const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+
+  for (const date of sortedDates) {
+    const items = groups[date];
+    const dt = new Date(date + 'T00:00:00');
+    const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
+    const dateLabel = `${dt.getMonth()+1}月${dt.getDate()}日 ${weekdays[dt.getDay()]}`;
+    const isUpcoming = items[0].status === 'upcoming';
+
+    html += `<div style="font-size:12px;color:var(--text3);font-weight:600;margin:16px 0 8px;display:flex;align-items:center;gap:6px;">
+      ${isUpcoming ? '🔵' : '⚪'} ${dateLabel}
+      <span style="font-weight:400;">· ${items.length}个需求</span>
+    </div>`;
+
+    for (const r of items) {
+      const submittedAt = r.submitted_at ? formatTime(r.submitted_at) : '';
+      html += `<div class="record-card ${r.status}" onclick="openDetail('${r.review_date}','${r.record_id}')">
+        <div class="title">${esc(r.name)}</div>
+        <div class="meta">
+          ${r.creator ? `<span class="meta-item">👤 ${esc(r.creator)}</span>` : ''}
+          ${r.designer ? `<span class="meta-item">🎨 ${esc(r.designer)}</span>` : ''}
+          ${r.review_type ? `<span class="meta-item">📋 ${esc(r.review_type)}</span>` : ''}
+          ${r.duration ? `<span class="meta-item">⏱ ${esc(r.duration)}分钟</span>` : ''}
+          ${submittedAt ? `<span class="meta-item">🕐 提交于${submittedAt}</span>` : ''}
+        </div>
+        ${r.status === 'upcoming' ? `<div class="actions">
+          <button class="btn btn-danger-outline btn-sm" onclick="event.stopPropagation();confirmCancel('${r.review_date}','${r.record_id}','${esc(r.name)}')">取消报名</button>
+          <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();openDetail('${r.review_date}','${r.record_id}')">查看详情</button>
+        </div>` : ''}
+      </div>`;
+    }
+  }
+
+  list.innerHTML = html;
+  document.getElementById('footerPrompt').style.display = 'block';
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-item').forEach((el, i) => {
+    el.classList.toggle('active', ['all','upcoming','past'][i] === tab);
+  });
+  renderList();
+}
+
+// === Detail page ===
+function openDetail(reviewDate, recordId) {
+  const r = allRecords.find(x => x.review_date === reviewDate && x.record_id === recordId);
+  if (!r) return;
+  currentDetail = r;
+  isEditMode = false;
+  renderDetail(r);
+  document.getElementById('detailPage').classList.add('show');
+}
+
+function closeDetail() {
+  document.getElementById('detailPage').classList.remove('show');
+  currentDetail = null;
+  isEditMode = false;
+}
+
+function renderDetail(r) {
+  const isUpcoming = r.status === 'upcoming';
+  document.getElementById('detailTitle').textContent = isEditMode ? '编辑报名信息' : '需求详情';
+
+  const dt = new Date(r.review_date + 'T00:00:00');
+  const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
+  const dateLabel = `${dt.getMonth()+1}月${dt.getDate()}日 ${weekdays[dt.getDay()]}`;
+  const submittedAt = r.submitted_at ? formatTime(r.submitted_at) : '-';
+
+  let html = '';
+
+  if (isEditMode) {
+    html = `<div class="detail-card">
+      <div class="field-row">
+        <div class="label">需求名称</div>
+        <input class="edit-input" id="editName" value="${esc(r.name)}">
+      </div>
+      <div class="field-row">
+        <div class="label">产品</div>
+        <input class="edit-input" id="editCreator" value="${esc(r.creator)}">
+      </div>
+      <div class="field-row">
+        <div class="label">设计师</div>
+        <input class="edit-input" id="editDesigner" value="${esc(r.designer)}">
+      </div>
+      <div class="field-row">
+        <div class="label">TAPD 链接</div>
+        <input class="edit-input" id="editTapdUrl" value="${esc(r.tapd_url)}">
+      </div>
+      <div class="field-row">
+        <div class="label">预计评审时间（分钟）</div>
+        <input class="edit-input" id="editDuration" value="${esc(r.duration)}">
+      </div>
+    </div>`;
+  } else {
+    html = `<div class="detail-card">
+      <div class="field-row">
+        <div class="label">需求名称</div>
+        <div class="value" style="font-size:16px;font-weight:600;">${esc(r.name)}</div>
+      </div>
+      <div class="field-row">
+        <div class="label">评审日期</div>
+        <div class="value">📅 ${dateLabel} ${r.review_time || ''}</div>
+      </div>
+      ${r.review_type ? `<div class="field-row">
+        <div class="label">评审类型</div>
+        <div class="value">${esc(r.review_type)}</div>
+      </div>` : ''}
+      ${r.creator ? `<div class="field-row">
+        <div class="label">产品</div>
+        <div class="value">${esc(r.creator)}</div>
+      </div>` : ''}
+      ${r.designer ? `<div class="field-row">
+        <div class="label">设计师</div>
+        <div class="value">${esc(r.designer)}</div>
+      </div>` : ''}
+      ${r.duration ? `<div class="field-row">
+        <div class="label">预计评审时间</div>
+        <div class="value">⏱ ${esc(r.duration)}分钟</div>
+      </div>` : ''}
+      ${r.tapd_url ? `<div class="field-row">
+        <div class="label">TAPD 链接</div>
+        <div class="value"><a href="${esc(r.tapd_url)}" target="_blank">🔗 查看 TAPD 需求</a></div>
+      </div>` : ''}
+      ${r.ft ? `<div class="field-row">
+        <div class="label">所属项目</div>
+        <div class="value">${esc(r.ft)}</div>
+      </div>` : ''}
+      ${r.summary ? `<div class="field-row">
+        <div class="label">需求概述</div>
+        <div class="value" style="font-size:13px;color:var(--text2);line-height:1.6;">${esc(r.summary)}</div>
+      </div>` : ''}
+      <div class="field-row">
+        <div class="label">提交时间</div>
+        <div class="value" style="font-size:13px;color:var(--text3);">${submittedAt}</div>
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('detailContent').innerHTML = html;
+
+  // Actions
+  let actionsHtml = '';
+  if (isUpcoming) {
+    if (isEditMode) {
+      actionsHtml = `
+        <button class="btn btn-outline" onclick="cancelEdit()">取消</button>
+        <button class="btn btn-primary" onclick="saveEdit()">保存修改</button>
+      `;
+    } else {
+      actionsHtml = `
+        <button class="btn btn-danger-outline" onclick="confirmCancel('${r.review_date}','${r.record_id}','${esc(r.name)}')">取消报名</button>
+        <button class="btn btn-primary" onclick="enterEdit()">编辑</button>
+      `;
+    }
+  }
+  document.getElementById('detailActions').innerHTML = actionsHtml;
+  document.getElementById('detailActions').style.display = isUpcoming ? 'flex' : 'none';
+}
+
+function enterEdit() {
+  isEditMode = true;
+  renderDetail(currentDetail);
+}
+
+function cancelEdit() {
+  isEditMode = false;
+  renderDetail(currentDetail);
+}
+
+async function saveEdit() {
+  const updates = {
+    name: document.getElementById('editName').value.trim(),
+    creator: document.getElementById('editCreator').value.trim(),
+    designer: document.getElementById('editDesigner').value.trim(),
+    tapd_url: document.getElementById('editTapdUrl').value.trim(),
+    duration: document.getElementById('editDuration').value.trim(),
+  };
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/update_record`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        review_date: currentDetail.review_date,
+        record_id: currentDetail.record_id,
+        updates
+      })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      // Update local data
+      Object.assign(currentDetail, updates);
+      isEditMode = false;
+      renderDetail(currentDetail);
+      renderList();
+      showToast('✅ 已保存');
+    } else {
+      showToast('❌ ' + (data.error || data.message));
+    }
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  }
+}
+
+// === Cancel ===
+function confirmCancel(reviewDate, recordId, name) {
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `<div class="confirm-box">
+    <div class="title">确认取消？</div>
+    <div class="msg">将取消「${name}」的评审报名</div>
+    <div class="btns">
+      <button class="btn btn-outline" onclick="this.closest('.confirm-overlay').remove()">再想想</button>
+      <button class="btn btn-primary" style="background:var(--danger);" onclick="doCancel('${reviewDate}','${recordId}',this)">确认取消</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function doCancel(reviewDate, recordId, btn) {
+  btn.disabled = true;
+  btn.textContent = '取消中...';
+  try {
+    const resp = await fetch(`${API_BASE}/api/cancel`, {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ review_date: reviewDate, record_id: recordId })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      // 暂存被取消的记录，用于撤回
+      const cancelled = allRecords.find(r => r.review_date === reviewDate && r.record_id === recordId);
+      allRecords = allRecords.filter(r => !(r.review_date === reviewDate && r.record_id === recordId));
+      renderList();
+      closeDetail();
+      showUndoToast('已取消报名', async () => {
+        // 撤回：调用 restore API
+        try {
+          const rResp = await fetch(`${API_BASE}/api/restore`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ review_date: reviewDate, record_id: recordId })
+          });
+          const rData = await rResp.json();
+          if (rData.success && cancelled) {
+            allRecords.push(cancelled);
+            allRecords.sort((a, b) => b.review_date.localeCompare(a.review_date));
+            renderList();
+            showToast('✅ 已恢复报名');
+          } else {
+            showToast('❌ 恢复失败');
+          }
+        } catch (e) {
+          showToast('❌ ' + e.message);
+        }
+      });
+    } else {
+      showToast('❌ ' + (data.error || data.message));
+    }
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  }
+  document.querySelector('.confirm-overlay')?.remove();
+}
+
+// === Utils ===
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
+
+function formatTime(isoStr) {
+  if (!isoStr) return '';
+  try {
+    const d = new Date(isoStr);
+    return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  } catch { return ''; }
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2600);
+}
+
+function showUndoToast(msg, undoCallback) {
+  // 移除旧的 undo toast
+  document.querySelector('.undo-toast')?.remove();
+
+  const t = document.createElement('div');
+  t.className = 'undo-toast';
+  t.innerHTML = `
+    <span>${msg}</span>
+    <button class="undo-btn" id="undoBtn">撤回 <span id="undoCountdown">5</span>s</button>
+  `;
+  document.body.appendChild(t);
+
+  let seconds = 5;
+  let undone = false;
+
+  const timer = setInterval(() => {
+    seconds--;
+    const cd = document.getElementById('undoCountdown');
+    if (cd) cd.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(timer);
+      t.style.animation = 'fadeOut .3s ease forwards';
+      setTimeout(() => t.remove(), 300);
+    }
+  }, 1000);
+
+  t.querySelector('#undoBtn').addEventListener('click', () => {
+    if (undone) return;
+    undone = true;
+    clearInterval(timer);
+    t.remove();
+    undoCallback();
+  });
+}
+</script>
+</body>
+</html>
