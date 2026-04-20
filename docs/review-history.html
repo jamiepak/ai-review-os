@@ -338,7 +338,7 @@ function renderList() {
   const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
 
   for (const date of sortedDates) {
-    const items = groups[date];
+    const items = groups[date].sort((a, b) => (b.submitted_at || '').localeCompare(a.submitted_at || ''));
     const dt = new Date(date + 'T00:00:00');
     const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
     const dateLabel = `${dt.getMonth()+1}月${dt.getDate()}日 ${weekdays[dt.getDay()]}`;

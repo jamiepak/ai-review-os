@@ -449,7 +449,7 @@ async function loadUpcomingMeetings() {
     if (data.success) {
       upcomingMeetings = (data.upcoming || [])
         .filter(m => m.status === 'scheduled')
-        .sort((a, b) => a.start_time.localeCompare(b.start_time))
+        .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
         .slice(0, 6);
     }
   } catch(e) { console.warn('加载会议列表失败', e); }
