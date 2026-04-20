@@ -141,6 +141,13 @@ function renderList() {
   document.getElementById('badgePast').textContent = pastCount;
   document.getElementById('badgeAll').textContent = allMeetings.filter(m => m.status !== 'cancelled').length;
 
+  // 排序：即将到来按时间升序（最近的在前），已结束/全部按时间降序
+  if (currentTab === 'upcoming') {
+    filtered.sort((a, b) => new Date(a.start_time) - new Date(b.start_time));
+  } else {
+    filtered.sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+  }
+
   if (filtered.length === 0) {
     document.getElementById('meetingsList').innerHTML = `<div class="empty-state"><div class="icon">📭</div><div>${currentTab==='upcoming'?'暂无即将到来的评审':'暂无记录'}</div></div>`;
     return;
