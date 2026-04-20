@@ -321,6 +321,14 @@ function renderList() {
   document.getElementById('badgeUpcoming').textContent = allRecords.filter(r => r.status === 'upcoming').length;
   document.getElementById('badgePast').textContent = allRecords.filter(r => r.status === 'past').length;
 
+  // 排序：待评审优先，同状态按评审日期降序（最近的在前）
+  filtered.sort((a, b) => {
+    const sa = a.status === 'upcoming' ? 0 : 1;
+    const sb = b.status === 'upcoming' ? 0 : 1;
+    if (sa !== sb) return sa - sb;
+    return (b.review_date || '').localeCompare(a.review_date || '');
+  });
+
   if (filtered.length === 0) {
     list.innerHTML = '<div class="empty-state"><div class="icon">📭</div><div class="text">暂无评审记录</div></div>';
     document.getElementById('footerPrompt').style.display = 'none';
